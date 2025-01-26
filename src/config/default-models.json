@@ -1,0 +1,106 @@
+{
+    "allowedModels": [
+      {
+        "id": "amazon/nova-pro-v1",
+        "speedScore": 0.72,
+        "intelligenceScore": 0.52,
+        "costScore": 0.85
+      },
+      {
+        "id": "anthropic/claude-3.5-haiku",
+        "speedScore": 0.66,
+        "intelligenceScore": 0.32,
+        "costScore": 0.84
+      },
+      {
+        "id": "anthropic/claude-3.5-sonnet",
+        "speedScore": 0.67,
+        "intelligenceScore": 0.68,
+        "costScore": 0.70
+      },
+      {
+        "id": "cohere/command-r",
+        "speedScore": 0.78,
+        "intelligenceScore": 0.28,
+        "costScore": 0.95
+      },
+      {
+        "id": "cohere/command-r-plus",
+        "speedScore": 0.64,
+        "intelligenceScore": 0.01,
+        "costScore": 0.72
+      },
+      {
+        "id": "deepseek/deepseek-r1",
+        "speedScore": 0.27,
+        "intelligenceScore": 0.97,
+        "costScore": 0.82
+      },
+      {
+        "id": "deepseek/deepseek-chat",
+        "speedScore": 0.52,
+        "intelligenceScore": 0.65,
+        "costScore": 0.90
+      },
+      {
+        "id": "google/gemini-flash-1.5",
+        "speedScore": 0.94,
+        "intelligenceScore": 0.49,
+        "costScore": 0.98
+      },
+      {
+        "id": "google/gemini-pro-1.5",
+        "speedScore": 0.65,
+        "intelligenceScore": 0.68,
+        "costScore": 0.81
+      },
+      {
+        "id": "mistralai/mistral-large",
+        "speedScore": 0.58,
+        "intelligenceScore": 0.49,
+        "costScore": 0.78
+      },
+      {
+        "id": "mistralai/mistral-nemo",
+        "speedScore": 0.71,
+        "intelligenceScore": 0.00,
+        "costScore": 1.00
+      },
+      {
+        "id": "mistralai/mistral-small",
+        "speedScore": 0.65,
+        "intelligenceScore": 0.14,
+        "costScore": 0.96
+      },
+      {
+        "id": "openai/gpt-4o",
+        "speedScore": 0.67,
+        "intelligenceScore": 0.46,
+        "costScore": 0.75
+      },
+      {
+        "id": "openai/gpt-4o-mini",
+        "speedScore": 0.68,
+        "intelligenceScore": 0.46,
+        "costScore": 0.97
+      },
+      {
+        "id": "openai/o1",
+        "speedScore": 0.13,
+        "intelligenceScore": 1.00,
+        "costScore": 0.15
+      },
+      {
+        "id": "openai/o1-mini",
+        "speedScore": 0.90,
+        "intelligenceScore": 0.80,
+        "costScore": 0.72
+      },
+      {
+        "id": "perplexity/llama-3.1-sonar-huge-128k-online",
+        "speedScore": 0.63,
+        "intelligenceScore": 0.58,
+        "costScore": 0.89
+      }
+    ]
+  }

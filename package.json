@@ -1,0 +1,49 @@
+{
+  "name": "mcp-sampling-service",
+  "version": "0.1.0",
+  "description": "Sampling service and strategy registry for Model Context Protocol",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && npm run copy-files",
+    "clean": "rimraf dist",
+    "prepare": "npm run clean && npm run build",
+    "test": "jest",
+    "copy-files": "powershell Write-Host 'Starting config files copy...' ; Copy-Item -Path ./src/config -Destination ./dist/config -Recurse -Force -Verbose ; Write-Host 'Copy operation completed'"
+  },
+  "keywords": [
+    "mcp",
+    "sampling",
+    "strategy",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.1",
+    "dotenv": "^16.4.7"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.17.16",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.0.0"
+  }
+}
