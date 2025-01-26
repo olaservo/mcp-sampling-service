@@ -1,5 +1,7 @@
 # mcp-sampling-service
 
+🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change.** 🚧
+
 A flexible sampling service and strategy registry for the Model Context Protocol (MCP) ecosystem.
 
 ## Installation
