@@ -1,8 +1,15 @@
 import { SamplingError, SamplingErrorCodes } from '../types/errors.js';
 import { SamplingParams, SamplingResponse, MCPTextContent, MCPImageContent } from '../types/sampling.js';
 import { env } from '../config/env.js';
+import { openRouterStrategy } from '../strategies/openrouter.js';
+import { SamplingStrategyFactory } from '../types/sampling.js';
 
 export class SamplingService {
+  private strategy: ReturnType<SamplingStrategyFactory>;
+
+  constructor() {
+    this.strategy = openRouterStrategy({});  // Use default model configs
+  }
 
   async handleSamplingRequest(params: SamplingParams, requestId: number): Promise<SamplingResponse> {
     try {
@@ -38,71 +45,48 @@ export class SamplingService {
     }
   }
 
-  private processMessages(params: SamplingParams): Array<{ role: string; content: MCPTextContent | MCPImageContent }> {
+  private processMessages(params: SamplingParams): Array<{ [key: string]: unknown; role: "user" | "assistant"; content: { [key: string]: unknown } & (MCPTextContent | MCPImageContent) }> {
     return params.messages.map(msg => ({
-      role: msg.role,
+      role: msg.role as "user" | "assistant",
       content: msg.content.type === 'text'
-        ? { type: 'text', text: msg.content.text || '' } as MCPTextContent
+        ? { type: 'text', text: String(msg.content.text || '') } as { [key: string]: unknown } & MCPTextContent
         : {
             type: 'image',
-            data: msg.content.data || '',
+            data: String(msg.content.data || ''),
             mimeType: msg.content.mimeType || 'image/jpeg'
-          } as MCPImageContent
+          } as { [key: string]: unknown } & MCPImageContent
     }));
   }
 
   private async makeCompletionRequest(
-    messages: Array<{ role: string; content: MCPTextContent | MCPImageContent }>,
+    messages: Array<{ [key: string]: unknown; role: "user" | "assistant"; content: { [key: string]: unknown } & (MCPTextContent | MCPImageContent) }>,
     params: SamplingParams
   ): Promise<{ model: string; content: { text: string }; stopReason?: string }> {
-    const response = await fetch('http://localhost:3001/api/completion', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: env.DEFAULT_MODEL_NAME,
+    const result = await this.strategy.handleSamplingRequest({
+      method: "sampling/createMessage",
+      params: {
         messages,
-        config: {
-          temperature: params.temperature,
-          maxTokens: params.maxTokens,
-          stopSequences: params.stopSequences,
-          modelPreferences: params.modelPreferences
-        }
-      })
+        maxTokens: params.maxTokens,
+        temperature: params.temperature ?? 0.4,
+        stopSequences: params.stopSequences,
+        modelPreferences: params.modelPreferences,
+        systemPrompt: params.systemPrompt,
+        includeContext: params.includeContext
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (typeof result.model !== 'string' || typeof result.content?.text !== 'string') {
       throw new SamplingError(
         SamplingErrorCodes.SamplingError,
-        `Failed to get completion: ${errorText}`
+        'Invalid response format from strategy'
       );
     }
 
-    const data = await response.json();
-    
-    // Type guard for completion result
-    if (typeof data === 'object' && data !== null &&
-        'model' in data && typeof data.model === 'string' &&
-        'content' in data && typeof data.content === 'object' && data.content !== null &&
-        'text' in data.content && typeof data.content.text === 'string') {
-      const result = data as { 
-        model: string; 
-        content: { text: string }; 
-        stopReason?: string 
-      };
-      return {
-        model: result.model,
-        content: { text: result.content.text },
-        stopReason: result.stopReason
-      };
-    }
-    
-    throw new SamplingError(
-      SamplingErrorCodes.SamplingError,
-      'Invalid completion response format'
-    );
+    return {
+      model: result.model,
+      content: { text: result.content.text },
+      stopReason: result.stopReason || 'stop'
+    };
   }
 
   private formatSuccessResponse(
