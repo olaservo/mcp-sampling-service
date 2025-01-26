@@ -1,17 +1,28 @@
-# zem-sampling-service
+# mcp-sampling-service
 
-A flexible sampling service and strategy registry for the zem ecosystem.
+A flexible sampling service and strategy registry for the Model Context Protocol (MCP) ecosystem.
 
 ## Installation
 
 ```bash
-npm install zem-sampling-service
+npm install mcp-sampling-service
+```
+
+### Environment Setup
+
+Create a `.env` file with the following variables:
+```bash
+OPENROUTER_API_KEY=your_api_key_here
+DEFAULT_MODEL_NAME=your_default_model # e.g. "openai/gpt-3.5-turbo"
 ```
 
 ## Features
 
 - Plugin-based sampling strategy system
-- Built-in strategies (stub and zem)
+- OpenRouter integration with smart model selection
+- Model scoring based on speed, intelligence, and cost
+- Configurable model preferences and hints
+- Default models support
 - Type-safe implementation
 - Extensible architecture
 
@@ -23,22 +34,35 @@ npm install zem-sampling-service
 import { 
   SamplingStrategyRegistry, 
   stubStrategy, 
-  zemStrategy 
-} from 'zem-sampling-service';
+  openRouterStrategy 
+} from 'mcp-sampling-service';
 
 // Get registry instance
 const registry = SamplingStrategyRegistry.getInstance();
 
 // Register built-in strategies
 registry.register('stub', stubStrategy);
-registry.register('zem', zemStrategy);
+registry.register('openrouter', openRouterStrategy);
 
-// Create strategy instance
-const strategy = registry.create('zem', { 
-  apiEndpoint: 'http://localhost:3001' 
+// Create strategy instance with optional model configurations
+const strategy = registry.create('openrouter', {
+  allowedModels: [
+    {
+      id: "openai/gpt-4",
+      speedScore: 0.7,
+      intelligenceScore: 0.9,
+      costScore: 0.3
+    },
+    {
+      id: "openai/gpt-3.5-turbo",
+      speedScore: 0.9,
+      intelligenceScore: 0.7,
+      costScore: 0.8
+    }
+  ]
 });
 
-// Use strategy
+// Use strategy with model preferences
 const result = await strategy.handleSamplingRequest({
   params: {
     messages: [
@@ -50,7 +74,15 @@ const result = await strategy.handleSamplingRequest({
         }
       }
     ],
-    maxTokens: 1000
+    maxTokens: 1000,
+    modelPreferences: {
+      speedPriority: 0.8,
+      intelligencePriority: 0.6,
+      costPriority: 0.4,
+      hints: [
+        { name: "gpt" }
+      ]
+    }
   }
 });
 ```
@@ -61,7 +93,7 @@ const result = await strategy.handleSamplingRequest({
 import { 
   SamplingStrategy, 
   SamplingStrategyFactory 
-} from 'zem-sampling-service';
+} from 'mcp-sampling-service';
 
 // Create your strategy factory
 const customStrategy: SamplingStrategyFactory = (config) => ({
@@ -86,7 +118,7 @@ registry.register('custom', customStrategy);
 ### Using SamplingService Directly
 
 ```typescript
-import { SamplingService } from 'zem-sampling-service';
+import { SamplingService } from 'mcp-sampling-service';
 
 const service = new SamplingService();
 
@@ -100,7 +132,11 @@ const result = await service.handleSamplingRequest({
       }
     }
   ],
-  maxTokens: 1000
+  maxTokens: 1000,
+  modelPreferences: {
+    costPriority: 0.9,
+    hints: [{ name: "gpt-4" }]
+  }
 }, requestId);
 ```
 
@@ -118,19 +154,47 @@ const result = await service.handleSamplingRequest({
 #### Stub Strategy
 Simple strategy that returns a fixed response. Useful for testing.
 
-#### Zem Strategy
-Strategy that connects to zem-ui's completion API.
+#### OpenRouter Strategy
+Strategy that connects to OpenRouter's API with intelligent model selection.
 
 Configuration:
 ```typescript
-interface ZemSamplingConfig {
-  apiEndpoint: string;
+interface OpenRouterSamplingConfig {
+  allowedModels?: ModelConfig[];
+}
+
+interface ModelConfig {
+  id: string;
+  speedScore: number;    // 0-1 score for model speed
+  intelligenceScore: number;  // 0-1 score for model capability
+  costScore: number;     // 0-1 score for cost efficiency
+}
+```
+
+Model Preferences:
+```typescript
+interface ModelPreferences {
+  model?: string;  // Specific model override
+  hints?: ModelHint[];  // Hints for model selection
+  costPriority?: number;  // Priority for cost efficiency
+  speedPriority?: number;  // Priority for response speed
+  intelligencePriority?: number;  // Priority for model capability
+}
+
+interface ModelHint {
+  name?: string;  // Partial model name to match
+  [key: string]: unknown;
 }
 ```
 
 ### SamplingService
 
-Core service that handles sampling requests with proper validation and error handling.
+Core service that handles sampling requests with:
+- Model selection based on preferences
+- Automatic fallback to default model
+- Request validation
+- Error handling
+- Context length validation
 
 ## License
 
