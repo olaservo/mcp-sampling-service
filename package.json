@@ -21,7 +21,7 @@
     "clean": "rimraf dist",
     "prepare": "npm run clean && npm run build",
     "test": "jest",
-    "copy-files": "powershell Write-Host 'Starting config files copy...' ; Copy-Item -Path ./src/config -Destination ./dist/config -Recurse -Force -Verbose ; Write-Host 'Copy operation completed'"
+    "copy-files": "powershell Write-Host 'Starting config files copy...' ; New-Item -ItemType Directory -Force -Path './dist/config' ; Copy-Item -Path './src/config/*' -Destination './dist/config/' -Force -Verbose ; Write-Host 'Copy operation completed'"
   },
   "keywords": [
     "mcp",
