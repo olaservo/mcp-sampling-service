@@ -29,7 +29,7 @@
     "strategy",
     "llm"
   ],
-  "author": "",
+  "author": "olaservo",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
