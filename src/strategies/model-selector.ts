@@ -88,46 +88,41 @@ export class ModelSelector {
     return this.modelCache;
   }
 
-  private scoreModel(model: OpenRouterModel, prefs: ModelPreferences, params: SamplingParameters): number {
+  private matchesHints(model: OpenRouterModel, hints?: ModelHint[]): boolean {
+    if (!hints?.length) return true;
+    
+    for (const hint of hints) {
+      if (hint.name && model.id.toLowerCase().includes(hint.name.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private meetsContextRequirements(model: OpenRouterModel, params: SamplingParameters): boolean {
+    const requiredContext = (params.prompt?.length || 0) + (params.maxTokens || 0);
+    return requiredContext <= model.context_length;
+  }
+
+  private scoreModel(model: OpenRouterModel, prefs: ModelPreferences): number {
     const modelConfig = this.modelConfigs.get(model.id);
     if (!modelConfig) return -1;
     
     let score = 0;
     
-    // Context length requirements
-    const requiredContext = (params.prompt?.length || 0) + (params.maxTokens || 0);
-    if (requiredContext > model.context_length) {
-      return -1;
-    }
-
-    // Process model hints first
-    if (prefs.hints?.length) {
-      let matchesHint = false;
-      for (const hint of prefs.hints) {
-        if (hint.name && model.id.toLowerCase().includes(hint.name.toLowerCase())) {
-          matchesHint = true;
-          score += 100; // High score for matching hints
-          break;
-        }
-      }
-      if (!matchesHint) {
-        return -1; // Disqualify if no hints match
-      }
-    }
+    const BASE_WEIGHT = 100;
     
-    // Cost priority scoring
+    // Pure priority-based scoring without hint influence
     if (prefs.costPriority) {
-      score += modelConfig.costScore * (prefs.costPriority * 50);
+      score += modelConfig.costScore * (prefs.costPriority * BASE_WEIGHT);
     }
     
-    // Speed priority scoring
     if (prefs.speedPriority) {
-      score += modelConfig.speedScore * (prefs.speedPriority * 30);
+      score += modelConfig.speedScore * (prefs.speedPriority * BASE_WEIGHT);
     }
     
-    // Intelligence priority scoring 
     if (prefs.intelligencePriority) {
-      score += modelConfig.intelligenceScore * (prefs.intelligencePriority * 40);
+      score += modelConfig.intelligenceScore * (prefs.intelligencePriority * BASE_WEIGHT);
     }
 
     return score;
@@ -142,22 +137,30 @@ export class ModelSelector {
 
     const models = await this.getModels();
     
+    // Filter models based on requirements first
+    const eligibleModels = models.filter(model => 
+      this.allowedModels.has(model.id) &&
+      this.matchesHints(model, prefs.hints) &&
+      this.meetsContextRequirements(model, params)
+    );
+
+    if (eligibleModels.length === 0) {
+      return env.DEFAULT_MODEL_NAME;
+    }
+
+    // Score eligible models
     let bestScore = -Infinity;
     let bestModel = null;
     
-    for (const model of models) {
-      if (this.allowedModels.size > 0 && !this.allowedModels.has(model.id)) {
-        continue;
-      }
-      const score = this.scoreModel(model, prefs, params);
+    for (const model of eligibleModels) {
+      const score = this.scoreModel(model, prefs);
       if (score > bestScore) {
         bestScore = score;
         bestModel = model;
       }
     }
     
-    if (!bestModel || bestScore === -1) {
-      // If no suitable model found based on preferences, fall back to default
+    if (!bestModel) {
       return env.DEFAULT_MODEL_NAME;
     }
     
