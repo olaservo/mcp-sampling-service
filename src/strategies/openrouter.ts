@@ -78,7 +78,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
             ),
           messages,
           max_tokens: request.params.maxTokens || 1000,
-          temperature: request.params.temperature || 0.7,
+          temperature: request.params.temperature || 0.2,
           stop: request.params.stopSequences
         })
       });
