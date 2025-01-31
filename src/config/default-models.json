@@ -1,94 +1,94 @@
 {
-    "allowedModels": [
-      {
-        "id": "amazon/nova-pro-v1",
-        "speedScore": 0.70,
-        "intelligenceScore": 0.50,
-        "costScore": 0.80
-      },
-      {
-        "id": "anthropic/claude-3.5-haiku",
-        "speedScore": 0.70,
-        "intelligenceScore": 0.40,
-        "costScore": 0.70
-      },
-      {
-        "id": "anthropic/claude-3.5-sonnet",
-        "speedScore": 0.60,
-        "intelligenceScore": 0.75,
-        "costScore": 0.70
-      },
-      {
-        "id": "cohere/command-r",
-        "speedScore": 0.78,
-        "intelligenceScore": 0.28,
-        "costScore": 0.95
-      },
-      {
-        "id": "cohere/command-r-plus",
-        "speedScore": 0.64,
-        "intelligenceScore": 0.10,
-        "costScore": 0.72
-      },
-      {
-        "id": "deepseek/deepseek-r1",
-        "speedScore": 0.27,
-        "intelligenceScore": 0.97,
-        "costScore": 0.82
-      },
-      {
-        "id": "deepseek/deepseek-chat",
-        "speedScore": 0.52,
-        "intelligenceScore": 0.65,
-        "costScore": 0.90
-      },
-      {
-        "id": "google/gemini-flash-1.5",
-        "speedScore": 0.94,
-        "intelligenceScore": 0.49,
-        "costScore": 0.98
-      },
-      {
-        "id": "google/gemini-pro-1.5",
-        "speedScore": 0.65,
-        "intelligenceScore": 0.68,
-        "costScore": 0.81
-      },
-      {
-        "id": "mistralai/mistral-large",
-        "speedScore": 0.58,
-        "intelligenceScore": 0.49,
-        "costScore": 0.78
-      },
-      {
-        "id": "mistralai/mistral-nemo",
-        "speedScore": 0.71,
-        "intelligenceScore": 0.10,
-        "costScore": 1.00
-      },
-      {
-        "id": "openai/gpt-4o",
-        "speedScore": 0.67,
-        "intelligenceScore": 0.46,
-        "costScore": 0.75
-      },
-      {
-        "id": "openai/gpt-4o-mini",
-        "speedScore": 0.68,
-        "intelligenceScore": 0.46,
-        "costScore": 0.97
-      },
-      {
-        "id": "openai/o1-mini",
-        "speedScore": 0.90,
-        "intelligenceScore": 0.80,
-        "costScore": 0.72
-      },
-      {
-        "id": "nousresearch/hermes-3-llama-3.1-405b",
-        "speedScore": 0.63,
-        "intelligenceScore": 0.58,
-        "costScore": 0.89
-      }
-    ]
-  }
+  "allowedModels": [
+    {
+      "id": "amazon/nova-pro-v1",
+      "speedScore": 0.70,
+      "intelligenceScore": 0.50,
+      "costScore": 0.80
+    },
+    {
+      "id": "anthropic/claude-3.5-haiku",
+      "speedScore": 0.70,
+      "intelligenceScore": 0.40,
+      "costScore": 0.80
+    },
+    {
+      "id": "anthropic/claude-3.5-sonnet",
+      "speedScore": 0.60,
+      "intelligenceScore": 0.75,
+      "costScore": 0.65
+    },
+    {
+      "id": "cohere/command-r",
+      "speedScore": 0.78,
+      "intelligenceScore": 0.28,
+      "costScore": 0.95
+    },
+    {
+      "id": "cohere/command-r-plus",
+      "speedScore": 0.64,
+      "intelligenceScore": 0.10,
+      "costScore": 0.72
+    },
+    {
+      "id": "deepseek/deepseek-r1",
+      "speedScore": 0.45,
+      "intelligenceScore": 0.97,
+      "costScore": 0.82
+    },
+    {
+      "id": "deepseek/deepseek-chat",
+      "speedScore": 0.52,
+      "intelligenceScore": 0.65,
+      "costScore": 0.90
+    },
+    {
+      "id": "google/gemini-flash-1.5",
+      "speedScore": 0.94,
+      "intelligenceScore": 0.49,
+      "costScore": 0.98
+    },
+    {
+      "id": "google/gemini-pro-1.5",
+      "speedScore": 0.65,
+      "intelligenceScore": 0.68,
+      "costScore": 0.81
+    },
+    {
+      "id": "mistralai/mistral-large",
+      "speedScore": 0.58,
+      "intelligenceScore": 0.49,
+      "costScore": 0.78
+    },
+    {
+      "id": "mistralai/mistral-nemo",
+      "speedScore": 0.71,
+      "intelligenceScore": 0.10,
+      "costScore": 1.00
+    },
+    {
+      "id": "openai/gpt-4o",
+      "speedScore": 0.67,
+      "intelligenceScore": 0.46,
+      "costScore": 0.75
+    },
+    {
+      "id": "openai/gpt-4o-mini",
+      "speedScore": 0.68,
+      "intelligenceScore": 0.46,
+      "costScore": 0.85
+    },
+    {
+      "id": "openai/o1-mini",
+      "speedScore": 0.75,
+      "intelligenceScore": 0.80,
+      "costScore": 0.72
+    },
+    {
+      "id": "nousresearch/hermes-3-llama-3.1-405b",
+      "speedScore": 0.63,
+      "intelligenceScore": 0.58,
+      "costScore": 0.89
+    }
+  ]
+}
