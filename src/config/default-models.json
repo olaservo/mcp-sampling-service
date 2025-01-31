@@ -14,21 +14,21 @@
     },
     {
       "id": "anthropic/claude-3.5-sonnet",
-      "speedScore": 0.60,
-      "intelligenceScore": 0.75,
-      "costScore": 0.65
+      "speedScore": 0.65,
+      "intelligenceScore": 0.77,
+      "costScore": 0.70
     },
     {
       "id": "cohere/command-r",
       "speedScore": 0.78,
-      "intelligenceScore": 0.28,
-      "costScore": 0.95
+      "intelligenceScore": 0.55,
+      "costScore": 0.90
     },
     {
       "id": "cohere/command-r-plus",
-      "speedScore": 0.64,
-      "intelligenceScore": 0.10,
-      "costScore": 0.72
+      "speedScore": 0.60,
+      "intelligenceScore": 0.60,
+      "costScore": 0.88
     },
     {
       "id": "deepseek/deepseek-r1",
@@ -44,21 +44,21 @@
     },
     {
       "id": "google/gemini-flash-1.5",
-      "speedScore": 0.94,
-      "intelligenceScore": 0.49,
-      "costScore": 0.98
+      "speedScore": 0.90,
+      "intelligenceScore": 0.50,
+      "costScore": 0.60
     },
     {
       "id": "google/gemini-pro-1.5",
       "speedScore": 0.65,
       "intelligenceScore": 0.68,
-      "costScore": 0.81
+      "costScore": 0.80
     },
     {
       "id": "mistralai/mistral-large",
-      "speedScore": 0.58,
-      "intelligenceScore": 0.49,
-      "costScore": 0.78
+      "speedScore": 0.55,
+      "intelligenceScore": 0.50,
+      "costScore": 0.75
     },
     {
       "id": "mistralai/mistral-nemo",
@@ -86,9 +86,9 @@
     },
     {
       "id": "nousresearch/hermes-3-llama-3.1-405b",
-      "speedScore": 0.63,
-      "intelligenceScore": 0.58,
-      "costScore": 0.89
+      "speedScore": 0.50,
+      "intelligenceScore": 0.65,
+      "costScore": 0.90
     }
   ]
 }
