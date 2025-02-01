@@ -52,10 +52,50 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
 
   return {
     handleSamplingRequest: async (request: CreateMessageRequest): Promise<CreateMessageResult> => {
-      const messages = request.params.messages.map((msg: { role: string; content: { type: string; text?: string; data?: string } }) => ({
-        role: msg.role,
-        content: msg.content.type === 'text' ? msg.content.text : msg.content.data
-      }));
+      // Initialize with system prompt if it exists
+      const messages = request.params.systemPrompt 
+        ? [{
+            role: 'system',
+            content: request.params.systemPrompt
+          }]
+        : [];
+      
+      // Add user messages with proper type handling
+      request.params.messages.forEach((msg: { role: string; content: { type: string; text?: string; data?: string } }) => {
+        const content = msg.content.type === 'text' ? msg.content.text : msg.content.data;
+        if (content) {
+          messages.push({
+            role: msg.role,
+            content: content
+          });
+        }
+      });
+
+      const requestBody = {
+        model: request.params.modelPreferences?.model || 
+          await modelSelector.selectModel(
+            request.params.modelPreferences || {},
+            {
+              prompt: messages[messages.length - 1].content,
+              maxTokens: request.params.maxTokens,
+              temperature: request.params.temperature,
+              stopSequences: request.params.stopSequences
+            }
+          ),
+        messages,
+        max_tokens: request.params.maxTokens || 1000,
+        temperature: request.params.temperature || 0.2,
+        stop: request.params.stopSequences
+      };
+
+      console.log('OpenRouter Request URL:', OPENROUTER_API_URL);
+      console.log('OpenRouter Request Headers:', {
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:3000',
+        'X-Title': 'MCP Sampling Service'
+        // Authorization header excluded for security
+      });
+      console.log('OpenRouter Request Body:', requestBody);
 
       const response = await fetch(OPENROUTER_API_URL, {
         method: 'POST',
@@ -65,22 +105,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
           'HTTP-Referer': 'http://localhost:3000',
           'X-Title': 'MCP Sampling Service'
         },
-        body: JSON.stringify({
-          model: request.params.modelPreferences?.model || 
-            await modelSelector.selectModel(
-              request.params.modelPreferences || {},
-              {
-                prompt: messages[messages.length - 1].content,
-                maxTokens: request.params.maxTokens,
-                temperature: request.params.temperature,
-                stopSequences: request.params.stopSequences
-              }
-            ),
-          messages,
-          max_tokens: request.params.maxTokens || 1000,
-          temperature: request.params.temperature || 0.2,
-          stop: request.params.stopSequences
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -89,6 +114,8 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
       }
 
       const result = await response.json() as OpenRouterResponse;
+      console.log('OpenRouter Response Status:', response.status);
+      console.log('OpenRouter Response:', result);
       
       return {
         model: result.model,
