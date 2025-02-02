@@ -88,17 +88,6 @@ export class ModelSelector {
     return this.modelCache;
   }
 
-  private matchesHints(model: OpenRouterModel, hints?: ModelHint[]): boolean {
-    if (!hints?.length) return true;
-    
-    for (const hint of hints) {
-      if (hint.name && model.id.toLowerCase().includes(hint.name.toLowerCase())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private meetsContextRequirements(model: OpenRouterModel, params: SamplingParameters): boolean {
     const requiredContext = (params.prompt?.length || 0) + (params.maxTokens || 0);
     return requiredContext <= model.context_length;
@@ -137,22 +126,49 @@ export class ModelSelector {
 
     const models = await this.getModels();
     
-    // Filter models based on requirements first
-    const eligibleModels = models.filter(model => 
+    // Filter models based on basic requirements first
+    const baseEligibleModels = models.filter(model => 
       this.allowedModels.has(model.id) &&
-      this.matchesHints(model, prefs.hints) &&
       this.meetsContextRequirements(model, params)
     );
 
-    if (eligibleModels.length === 0) {
+    if (baseEligibleModels.length === 0) {
       return env.DEFAULT_MODEL_NAME;
     }
 
-    // Score eligible models
+    // Process hints in order
+    if (prefs.hints?.length) {
+      for (const hint of prefs.hints) {
+        if (!hint.name) continue;
+        
+        const matchingModels = baseEligibleModels.filter(model => 
+          model.id.toLowerCase().includes(hint.name!.toLowerCase())
+        );
+
+        if (matchingModels.length > 0) {
+          // Found models matching this hint, score only these models
+          let bestScore = -Infinity;
+          let bestModel = null;
+          
+          for (const model of matchingModels) {
+            const score = this.scoreModel(model, prefs);
+            if (score > bestScore) {
+              bestScore = score;
+              bestModel = model;
+            }
+          }
+          
+          return bestModel?.id || env.DEFAULT_MODEL_NAME;
+        }
+        // If no models match this hint, continue to next hint
+      }
+    }
+
+    // If no hints matched or no hints provided, score all eligible models
     let bestScore = -Infinity;
     let bestModel = null;
     
-    for (const model of eligibleModels) {
+    for (const model of baseEligibleModels) {
       const score = this.scoreModel(model, prefs);
       if (score > bestScore) {
         bestScore = score;
@@ -160,10 +176,6 @@ export class ModelSelector {
       }
     }
     
-    if (!bestModel) {
-      return env.DEFAULT_MODEL_NAME;
-    }
-    
-    return bestModel.id;
+    return bestModel?.id || env.DEFAULT_MODEL_NAME;
   }
 }

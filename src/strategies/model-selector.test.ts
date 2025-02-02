@@ -95,14 +95,42 @@ describe('ModelSelector', () => {
     expect(selectedModel).toBe(env.DEFAULT_MODEL_NAME);
   });
 
-  it('should filter by hints before scoring', async () => {
+  it('should select model matching first hint', async () => {
     const prefs = {
       intelligencePriority: 1,
-      hints: [{ name: 'claude' }]
+      hints: [{ name: 'claude' }, { name: 'gpt' }]
     };
 
     const selectedModel = await selector.selectModel(prefs, {});
     expect(selectedModel).toBe('anthropic/claude-3.5-sonnet');
+  });
+
+  it('should fallback to second hint if first hint has no matches', async () => {
+    const prefs = {
+      intelligencePriority: 1,
+      hints: [{ name: 'nonexistent' }, { name: 'claude' }]
+    };
+
+    const selectedModel = await selector.selectModel(prefs, {});
+    expect(selectedModel).toBe('anthropic/claude-3.5-sonnet');
+  });
+
+  it('should respect hint order when multiple hints match', async () => {
+    // First test with claude before gpt
+    const prefs1 = {
+      costPriority: 1,
+      hints: [{ name: 'claude' }, { name: 'gpt' }]
+    };
+    const selected1 = await selector.selectModel(prefs1, {});
+    expect(selected1).toBe('anthropic/claude-3.5-sonnet');
+
+    // Then test with gpt before claude
+    const prefs2 = {
+      costPriority: 1,
+      hints: [{ name: 'gpt' }, { name: 'claude' }]
+    };
+    const selected2 = await selector.selectModel(prefs2, {});
+    expect(selected2).toBe('openai/gpt-4o-mini'); // Should select gpt model since it's first hint
   });
 
   it('should handle multiple priorities', async () => {
