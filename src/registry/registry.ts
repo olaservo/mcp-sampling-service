@@ -1,8 +1,12 @@
 import { SamplingStrategy, SamplingStrategyFactory } from '../types/sampling.js';
+import { SamplingStrategyDefinition } from '../types/strategy.js';
 
 export class SamplingStrategyRegistry {
   private static instance: SamplingStrategyRegistry;
-  private strategies = new Map<string, SamplingStrategyFactory>();
+  private strategies = new Map<string, {
+    factory: SamplingStrategyFactory;
+    definition: SamplingStrategyDefinition;
+  }>();
 
   private constructor() {}
 
@@ -13,19 +17,23 @@ export class SamplingStrategyRegistry {
     return this.instance;
   }
 
-  register(name: string, factory: SamplingStrategyFactory): void {
-    this.strategies.set(name, factory);
+  register(name: string, factory: SamplingStrategyFactory, definition: SamplingStrategyDefinition): void {
+    this.strategies.set(name, { factory, definition });
   }
 
   create(name: string, config: Record<string, unknown>): SamplingStrategy {
-    const factory = this.strategies.get(name);
-    if (!factory) {
+    const strategy = this.strategies.get(name);
+    if (!strategy) {
       throw new Error(`Unknown sampling strategy: ${name}`);
     }
-    return factory(config);
+    return strategy.factory(config);
   }
 
   getAvailableStrategies(): string[] {
     return Array.from(this.strategies.keys());
+  }
+
+  getStrategyDefinitions(): SamplingStrategyDefinition[] {
+    return Array.from(this.strategies.values()).map(s => s.definition);
   }
 }

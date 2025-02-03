@@ -1,4 +1,35 @@
-import { CreateMessageRequest, CreateMessageResult, SamplingMessage } from "@modelcontextprotocol/sdk/types";
+import { 
+  CreateMessageRequest, 
+  CreateMessageResult, 
+  SamplingMessage,
+  TextContent,
+  ImageContent
+} from "@modelcontextprotocol/sdk/types";
+
+export interface SamplingResponse {
+  jsonrpc: '2.0';
+  id: number;
+  result?: {
+    model: string;
+    stopReason: string;
+    role: 'assistant';
+    content: {
+      type: 'text';
+      text: string;
+    };
+  };
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+export interface ModelPreferences extends Record<string, unknown> {
+  hints?: Array<{ name?: string }>;
+  costPriority?: number;
+  speedPriority?: number;
+  intelligencePriority?: number;
+}
 
 export interface SamplingStrategy {
   handleSamplingRequest(request: CreateMessageRequest): Promise<CreateMessageResult>;
@@ -20,47 +51,8 @@ export interface SamplingParams {
   temperature?: number;
   maxTokens: number;
   stopSequences?: string[];
-  modelPreferences?: {
-    hints?: Array<{ name?: string }>;
-    costPriority?: number;
-    speedPriority?: number;
-    intelligencePriority?: number;
-  };
+  modelPreferences?: ModelPreferences;
 }
 
-export interface CompletionResult {
-  model: string;
-  content: {
-    text: string;
-  };
-  stopReason?: string;
-}
-
-export interface SamplingResponse {
-  jsonrpc: '2.0';
-  id: number;
-  result?: {
-    model: string;
-    stopReason: string;
-    role: 'assistant';
-    content: {
-      type: 'text';
-      text: string;
-    };
-  };
-  error?: {
-    code: number;
-    message: string;
-  };
-}
-
-export interface MCPTextContent {
-  type: 'text';
-  text: string;
-}
-
-export interface MCPImageContent {
-  type: 'image';
-  data: string;
-  mimeType: string;
-}
+// Re-export SDK types for convenience
+export type { TextContent, ImageContent, CreateMessageRequest, CreateMessageResult };

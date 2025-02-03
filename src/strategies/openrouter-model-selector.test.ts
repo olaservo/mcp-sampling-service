@@ -1,7 +1,7 @@
-import { ModelSelector } from './model-selector.js';
+import { OpenRouterModelSelector } from './openrouter-model-selector.js';
 import { env } from '../config/env.js';
 
-describe('ModelSelector', () => {
+describe('OpenRouterModelSelector', () => {
   const modelConfigs = [
     {
       "id": "openai/gpt-4o",
@@ -35,10 +35,10 @@ describe('ModelSelector', () => {
     }
   ];
 
-  let selector: ModelSelector;
+  let selector: OpenRouterModelSelector;
 
   beforeEach(() => {
-    selector = new ModelSelector('dummy-key', modelConfigs);
+    selector = new OpenRouterModelSelector('dummy-key', modelConfigs);
   });
 
   it('should return default model when no preferences provided', async () => {

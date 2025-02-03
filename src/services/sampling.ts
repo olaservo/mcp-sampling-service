@@ -1,8 +1,6 @@
 import { SamplingError, SamplingErrorCodes } from '../types/errors.js';
-import { SamplingParams, SamplingResponse, MCPTextContent, MCPImageContent } from '../types/sampling.js';
-import { env } from '../config/env.js';
+import { SamplingParams, TextContent, ImageContent, SamplingResponse, SamplingStrategyFactory } from '../types/sampling.js';
 import { openRouterStrategy } from '../strategies/openrouter.js';
-import { SamplingStrategyFactory } from '../types/sampling.js';
 
 export class SamplingService {
   private strategy: ReturnType<SamplingStrategyFactory>;
@@ -45,21 +43,21 @@ export class SamplingService {
     }
   }
 
-  private processMessages(params: SamplingParams): Array<{ [key: string]: unknown; role: "user" | "assistant"; content: { [key: string]: unknown } & (MCPTextContent | MCPImageContent) }> {
+  private processMessages(params: SamplingParams): Array<{ role: "user" | "assistant"; content: TextContent | ImageContent }> {
     return params.messages.map(msg => ({
       role: msg.role as "user" | "assistant",
       content: msg.content.type === 'text'
-        ? { type: 'text', text: String(msg.content.text || '') } as { [key: string]: unknown } & MCPTextContent
+        ? { type: 'text', text: String(msg.content.text || '') } as TextContent
         : {
             type: 'image',
             data: String(msg.content.data || ''),
             mimeType: msg.content.mimeType || 'image/jpeg'
-          } as { [key: string]: unknown } & MCPImageContent
+          } as ImageContent
     }));
   }
 
   private async makeCompletionRequest(
-    messages: Array<{ [key: string]: unknown; role: "user" | "assistant"; content: { [key: string]: unknown } & (MCPTextContent | MCPImageContent) }>,
+    messages: Array<{ role: "user" | "assistant"; content: TextContent | ImageContent }>,
     params: SamplingParams
   ): Promise<{ model: string; content: { text: string }; stopReason?: string }> {
     const result = await this.strategy.handleSamplingRequest({

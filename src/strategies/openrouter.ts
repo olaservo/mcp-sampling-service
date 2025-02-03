@@ -1,6 +1,6 @@
 import { CreateMessageRequest, CreateMessageResult } from "@modelcontextprotocol/sdk/types";
 import { SamplingStrategyFactory } from '../types/sampling.js';
-import { ModelSelector, ModelConfig } from './model-selector.js';
+import { OpenRouterModelSelector, ModelConfig } from './openrouter-model-selector.js';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -43,7 +43,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
     throw new Error('Invalid OpenRouter sampling configuration. Expected openRouterApiKey string.');
   }
 
-  const modelSelector = new ModelSelector(
+  const modelSelector = new OpenRouterModelSelector(
     env.OPENROUTER_API_KEY,
     config.allowedModels || defaultModelsConfig.allowedModels
   );

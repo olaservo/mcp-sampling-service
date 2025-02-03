@@ -65,7 +65,7 @@ export interface ModelConfig {
 
 import { env } from '../config/env.js';
 
-export class ModelSelector {
+export class OpenRouterModelSelector {
   private openai: OpenAI;
   private modelCache: OpenRouterModel[] = [];
   private allowedModels: Set<string>;
