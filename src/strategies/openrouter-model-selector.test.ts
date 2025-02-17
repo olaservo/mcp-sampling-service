@@ -1,5 +1,5 @@
 import { OpenRouterModelSelector } from './openrouter-model-selector.js';
-import { env } from '../config/env.js';
+import '@jest/globals';
 
 describe('OpenRouterModelSelector', () => {
   const modelConfigs = [
@@ -35,15 +35,16 @@ describe('OpenRouterModelSelector', () => {
     }
   ];
 
+  const defaultModel = "openai/gpt-4o";
   let selector: OpenRouterModelSelector;
 
   beforeEach(() => {
-    selector = new OpenRouterModelSelector('dummy-key', modelConfigs);
+    selector = new OpenRouterModelSelector('dummy-key', modelConfigs, defaultModel);
   });
 
   it('should return default model when no preferences provided', async () => {
     const selectedModel = await selector.selectModel({}, {});
-    expect(selectedModel).toBe(env.DEFAULT_MODEL_NAME);
+    expect(selectedModel).toBe(defaultModel);
   });
 
   it('should select openai/o1 when prioritizing intelligence', async () => {
@@ -92,7 +93,7 @@ describe('OpenRouterModelSelector', () => {
     };
 
     const selectedModel = await selector.selectModel(prefs, params);
-    expect(selectedModel).toBe(env.DEFAULT_MODEL_NAME);
+    expect(selectedModel).toBe(defaultModel);
   });
 
   it('should select model matching first hint', async () => {

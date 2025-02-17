@@ -1,12 +1,26 @@
 import { SamplingError, SamplingErrorCodes } from '../types/errors.js';
 import { SamplingParams, TextContent, ImageContent, SamplingResponse, SamplingStrategyFactory } from '../types/sampling.js';
 import { openRouterStrategy } from '../strategies/openrouter.js';
+import { ModelConfig } from '../strategies/openrouter-model-selector.js';
 
 export class SamplingService {
   private strategy: ReturnType<SamplingStrategyFactory>;
 
-  constructor() {
-    this.strategy = openRouterStrategy({});  // Use default model configs
+  constructor(config?: { 
+    strategy?: ReturnType<SamplingStrategyFactory>;
+    openRouter?: {
+      apiKey: string;
+      defaultModel: string;
+      allowedModels?: ModelConfig[];
+    };
+  }) {
+    if (config?.strategy) {
+      this.strategy = config.strategy;
+    } else if (config?.openRouter) {
+      this.strategy = openRouterStrategy(config.openRouter);
+    } else {
+      throw new Error('Either strategy or openRouter configuration must be provided');
+    }
   }
 
   async handleSamplingRequest(params: SamplingParams, requestId: number): Promise<SamplingResponse> {

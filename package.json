@@ -1,6 +1,6 @@
 {
   "name": "mcp-sampling-service",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Sampling service and strategy registry for Model Context Protocol",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@types/node": "^20.17.16",
+    "@types/node": "^20.17.19",
     "jest": "^29.7.0",
     "rimraf": "^5.0.0",
     "ts-jest": "^29.2.5",

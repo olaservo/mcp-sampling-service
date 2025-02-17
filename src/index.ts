@@ -1,4 +1,3 @@
-import './config/env.js';
 import { SamplingStrategyRegistry } from './registry/index.js';
 import { stubStrategy } from './strategies/stub.js';
 import { openRouterStrategy } from './strategies/openrouter.js';
@@ -8,7 +7,7 @@ import type { SamplingStrategyDefinition } from './types/strategy.js';
 export { SamplingStrategyRegistry };
 export { stubStrategy };
 export { openRouterStrategy };
-export type { OpenRouterSamplingConfig } from './strategies/openrouter.js';
+export type { OpenRouterStrategyConfig } from './strategies/openrouter.js';
 export type { ModelConfig } from './strategies/openrouter-model-selector.js';
 export type {
   SamplingStrategy,
@@ -43,7 +42,30 @@ export const defaultStrategies: Record<string, {
     definition: {
       id: "openrouter",
       name: "Open Router Strategy",
-      requiresConfig: false
+      requiresConfig: true,
+      configFields: [
+        {
+          name: "apiKey",
+          type: "string",
+          required: true,
+          label: "API Key",
+          placeholder: "Your OpenRouter API key"
+        },
+        {
+          name: "defaultModel",
+          type: "string",
+          required: true,
+          label: "Default Model",
+          placeholder: "e.g., anthropic/claude-3.5-sonnet"
+        },
+        {
+          name: "allowedModels",
+          type: "string",
+          required: false,
+          label: "Allowed Models",
+          placeholder: "JSON array of model configurations"
+        }
+      ]
     }
   }
 };

@@ -63,15 +63,15 @@ export interface ModelConfig {
   costScore: number;
 }
 
-import { env } from '../config/env.js';
-
 export class OpenRouterModelSelector {
   private openai: OpenAI;
   private modelCache: OpenRouterModel[] = [];
   private allowedModels: Set<string>;
   private modelConfigs: Map<string, ModelConfig>;
+  private defaultModel: string;
   
-  constructor(apiKey: string, modelConfigs: ModelConfig[]) {
+  constructor(apiKey: string, modelConfigs: ModelConfig[], defaultModel: string) {
+    this.defaultModel = defaultModel;
     this.openai = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: apiKey
@@ -121,7 +121,7 @@ export class OpenRouterModelSelector {
     // If no specific preferences are provided, return the default model
     if (!prefs.model && !prefs.hints?.length && 
         !prefs.costPriority && !prefs.speedPriority && !prefs.intelligencePriority) {
-      return env.DEFAULT_MODEL_NAME;
+      return this.defaultModel;
     }
 
     const models = await this.getModels();
@@ -133,7 +133,7 @@ export class OpenRouterModelSelector {
     );
 
     if (baseEligibleModels.length === 0) {
-      return env.DEFAULT_MODEL_NAME;
+      return this.defaultModel;
     }
 
     // Process hints in order
@@ -158,7 +158,7 @@ export class OpenRouterModelSelector {
             }
           }
           
-          return bestModel?.id || env.DEFAULT_MODEL_NAME;
+          return bestModel?.id || this.defaultModel;
         }
         // If no models match this hint, continue to next hint
       }
@@ -176,6 +176,6 @@ export class OpenRouterModelSelector {
       }
     }
     
-    return bestModel?.id || env.DEFAULT_MODEL_NAME;
+    return bestModel?.id || this.defaultModel;
   }
 }

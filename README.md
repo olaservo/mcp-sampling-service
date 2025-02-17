@@ -10,14 +10,6 @@ A flexible sampling service and strategy registry for the Model Context Protocol
 npm install mcp-sampling-service
 ```
 
-### Environment Setup
-
-Create a `.env` file with the following variables:
-```bash
-OPENROUTER_API_KEY=your_api_key_here
-DEFAULT_MODEL_NAME=your_default_model # e.g. "openai/gpt-3.5-turbo"
-```
-
 ## Features
 
 - Plugin-based sampling strategy system
@@ -27,6 +19,68 @@ DEFAULT_MODEL_NAME=your_default_model # e.g. "openai/gpt-3.5-turbo"
 - Default models support
 - Type-safe implementation
 - Extensible architecture
+
+## Configuration
+
+The sampling service uses a configuration-based approach for initialization. This provides better flexibility, runtime updates, and easier testing compared to environment variables.
+
+### Configuration Options
+
+- **apiKey** (required): Your OpenRouter API key
+- **defaultModel** (required): Model to use when no preferences match
+- **allowedModels** (optional): JSON string of custom model configurations. If not provided, uses built-in model configurations optimized for various use cases.
+
+### Default Models
+
+The service includes a comprehensive set of pre-configured models that are used when `allowedModels` is not provided:
+- Fast models (e.g., google/gemini-flash-1.5 with 0.94 speed score)
+- Intelligent models (e.g., deepseek/deepseek-r1 with 0.97 intelligence score)
+- Cost-effective models (e.g., mistralai/mistral-nemo with 1.00 cost score)
+
+You only need to provide `allowedModels` if you want to customize the available models and their scores.
+
+### Model Selection
+
+The service selects models based on:
+1. Explicit model override in preferences
+2. Matching hints in order
+3. Priority scoring (speed, intelligence, cost)
+4. Fallback to defaultModel
+
+### OpenRouter Configuration
+
+```typescript
+const service = new SamplingService({
+  openRouter: {
+    apiKey: "your-api-key-here",
+    defaultModel: "anthropic/claude-3.5-sonnet",
+    allowedModels: JSON.stringify([
+      {
+        id: "openai/gpt-4",
+        speedScore: 0.7,
+        intelligenceScore: 0.9,
+        costScore: 0.3
+      },
+      {
+        id: "anthropic/claude-3.5-sonnet",
+        speedScore: 0.9,
+        intelligenceScore: 0.7,
+        costScore: 0.8
+      }
+    ])
+  }
+});
+```
+
+### Custom Strategy Configuration
+
+```typescript
+const service = new SamplingService({
+  strategy: customStrategy({
+    // Your custom strategy configuration
+  })
+});
+```
 
 ## Usage
 
@@ -46,9 +100,11 @@ const registry = SamplingStrategyRegistry.getInstance();
 registry.register('stub', stubStrategy);
 registry.register('openrouter', openRouterStrategy);
 
-// Create strategy instance with optional model configurations
+// Create strategy instance with configuration
 const strategy = registry.create('openrouter', {
-  allowedModels: [
+  apiKey: "your-api-key-here",
+  defaultModel: "anthropic/claude-3.5-sonnet",
+  allowedModels: JSON.stringify([
     {
       id: "openai/gpt-4",
       speedScore: 0.7,
@@ -56,12 +112,12 @@ const strategy = registry.create('openrouter', {
       costScore: 0.3
     },
     {
-      id: "openai/gpt-3.5-turbo",
+      id: "anthropic/claude-3.5-sonnet",
       speedScore: 0.9,
       intelligenceScore: 0.7,
       costScore: 0.8
     }
-  ]
+  ])
 });
 
 // Use strategy with model preferences
@@ -122,7 +178,13 @@ registry.register('custom', customStrategy);
 ```typescript
 import { SamplingService } from 'mcp-sampling-service';
 
-const service = new SamplingService();
+const service = new SamplingService({
+  openRouter: {
+    apiKey: "your-api-key-here",
+    defaultModel: "anthropic/claude-3.5-sonnet"
+    // allowedModels is optional - will use built-in model configurations if not provided
+  }
+});
 
 const result = await service.handleSamplingRequest({
   messages: [
@@ -161,8 +223,10 @@ Strategy that connects to OpenRouter's API with intelligent model selection.
 
 Configuration:
 ```typescript
-interface OpenRouterSamplingConfig {
-  allowedModels?: ModelConfig[];
+interface OpenRouterStrategyConfig {
+  apiKey: string;
+  defaultModel: string;
+  allowedModels?: string;  // JSON string of ModelConfig[] - uses built-in configurations if not provided
 }
 
 interface ModelConfig {
@@ -193,7 +257,7 @@ interface ModelHint {
 
 Core service that handles sampling requests with:
 - Model selection based on preferences
-- Automatic fallback to default model
+- Configuration-based initialization
 - Request validation
 - Error handling
 - Context length validation
