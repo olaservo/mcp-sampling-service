@@ -56,7 +56,7 @@ export const defaultStrategies: Record<string, {
           type: "string",
           required: true,
           label: "Default Model",
-          placeholder: "e.g., openai/gpt-3.5-turbo"
+          placeholder: "e.g., anthropic/claude-3.5-sonnet"
         },
         {
           name: "allowedModels",

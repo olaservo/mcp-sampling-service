@@ -30,7 +30,7 @@ The sampling service uses a configuration-based approach for initialization. Thi
 const service = new SamplingService({
   openRouter: {
     apiKey: "your-api-key-here",
-    defaultModel: "openai/gpt-3.5-turbo",
+    defaultModel: "anthropic/claude-3.5-sonnet",
     allowedModels: [
       {
         id: "openai/gpt-4",
@@ -39,7 +39,7 @@ const service = new SamplingService({
         costScore: 0.3
       },
       {
-        id: "openai/gpt-3.5-turbo",
+        id: "anthropic/claude-3.5-sonnet",
         speedScore: 0.9,
         intelligenceScore: 0.7,
         costScore: 0.8
@@ -80,7 +80,7 @@ registry.register('openrouter', openRouterStrategy);
 // Create strategy instance with configuration
 const strategy = registry.create('openrouter', {
   apiKey: "your-api-key-here",
-  defaultModel: "openai/gpt-3.5-turbo",
+  defaultModel: "anthropic/claude-3.5-sonnet",
   allowedModels: [
     {
       id: "openai/gpt-4",
@@ -89,7 +89,7 @@ const strategy = registry.create('openrouter', {
       costScore: 0.3
     },
     {
-      id: "openai/gpt-3.5-turbo",
+      id: "anthropic/claude-3.5-sonnet",
       speedScore: 0.9,
       intelligenceScore: 0.7,
       costScore: 0.8
@@ -158,7 +158,7 @@ import { SamplingService } from 'mcp-sampling-service';
 const service = new SamplingService({
   openRouter: {
     apiKey: "your-api-key-here",
-    defaultModel: "openai/gpt-3.5-turbo"
+    defaultModel: "anthropic/claude-3.5-sonnet"
   }
 });
 
