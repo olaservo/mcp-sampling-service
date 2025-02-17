@@ -24,6 +24,29 @@ npm install mcp-sampling-service
 
 The sampling service uses a configuration-based approach for initialization. This provides better flexibility, runtime updates, and easier testing compared to environment variables.
 
+### Configuration Options
+
+- **apiKey** (required): Your OpenRouter API key
+- **defaultModel** (required): Model to use when no preferences match
+- **allowedModels** (optional): JSON string of custom model configurations. If not provided, uses built-in model configurations optimized for various use cases.
+
+### Default Models
+
+The service includes a comprehensive set of pre-configured models that are used when `allowedModels` is not provided:
+- Fast models (e.g., google/gemini-flash-1.5 with 0.94 speed score)
+- Intelligent models (e.g., deepseek/deepseek-r1 with 0.97 intelligence score)
+- Cost-effective models (e.g., mistralai/mistral-nemo with 1.00 cost score)
+
+You only need to provide `allowedModels` if you want to customize the available models and their scores.
+
+### Model Selection
+
+The service selects models based on:
+1. Explicit model override in preferences
+2. Matching hints in order
+3. Priority scoring (speed, intelligence, cost)
+4. Fallback to defaultModel
+
 ### OpenRouter Configuration
 
 ```typescript
@@ -31,7 +54,7 @@ const service = new SamplingService({
   openRouter: {
     apiKey: "your-api-key-here",
     defaultModel: "anthropic/claude-3.5-sonnet",
-    allowedModels: [
+    allowedModels: JSON.stringify([
       {
         id: "openai/gpt-4",
         speedScore: 0.7,
@@ -44,7 +67,7 @@ const service = new SamplingService({
         intelligenceScore: 0.7,
         costScore: 0.8
       }
-    ]
+    ])
   }
 });
 ```
@@ -81,7 +104,7 @@ registry.register('openrouter', openRouterStrategy);
 const strategy = registry.create('openrouter', {
   apiKey: "your-api-key-here",
   defaultModel: "anthropic/claude-3.5-sonnet",
-  allowedModels: [
+  allowedModels: JSON.stringify([
     {
       id: "openai/gpt-4",
       speedScore: 0.7,
@@ -94,7 +117,7 @@ const strategy = registry.create('openrouter', {
       intelligenceScore: 0.7,
       costScore: 0.8
     }
-  ]
+  ])
 });
 
 // Use strategy with model preferences
@@ -159,6 +182,7 @@ const service = new SamplingService({
   openRouter: {
     apiKey: "your-api-key-here",
     defaultModel: "anthropic/claude-3.5-sonnet"
+    // allowedModels is optional - will use built-in model configurations if not provided
   }
 });
 
@@ -202,7 +226,7 @@ Configuration:
 interface OpenRouterStrategyConfig {
   apiKey: string;
   defaultModel: string;
-  allowedModels?: ModelConfig[];
+  allowedModels?: string;  // JSON string of ModelConfig[] - uses built-in configurations if not provided
 }
 
 interface ModelConfig {
