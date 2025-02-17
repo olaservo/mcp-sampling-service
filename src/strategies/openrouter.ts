@@ -4,12 +4,16 @@ import { OpenRouterModelSelector, ModelConfig } from './openrouter-model-selecto
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { env } from '../config/env.js';
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const defaultModelsConfig = JSON.parse(
   readFileSync(join(__dirname, '../config/default-models.json'), 'utf-8')
 );
+
+export interface OpenRouterStrategyConfig {
+  apiKey: string;
+  defaultModel: string;
+  allowedModels?: ModelConfig[];
+}
 
 interface OpenRouterResponse {
   model: string;
@@ -21,31 +25,51 @@ interface OpenRouterResponse {
   }>;
 }
 
-export interface OpenRouterSamplingConfig extends Record<string, unknown> {
-  allowedModels?: ModelConfig[];
-}
+function isOpenRouterConfig(config: unknown): config is OpenRouterStrategyConfig {
+  if (typeof config !== 'object' || config === null) {
+    return false;
+  }
 
-function isOpenRouterConfig(config: Record<string, unknown>): config is OpenRouterSamplingConfig {
-  return typeof config === 'object' 
-    && config !== null 
-    && (!('allowedModels' in config) || (Array.isArray(config.allowedModels) && 
-        config.allowedModels.every(model => 
+  const { apiKey, defaultModel, allowedModels } = config as Partial<OpenRouterStrategyConfig>;
+
+  if (typeof apiKey !== 'string' || typeof defaultModel !== 'string') {
+    return false;
+  }
+
+  if (allowedModels !== undefined) {
+    if (typeof allowedModels === 'string') {
+      try {
+        const parsed = JSON.parse(allowedModels);
+        if (!Array.isArray(parsed)) {
+          return false;
+        }
+        return parsed.every(model => 
           typeof model === 'object' 
-          && 'id' in model 
-          && 'speedScore' in model 
-          && 'intelligenceScore' in model 
-          && 'costScore' in model
-        )));
+          && model !== null
+          && typeof model.id === 'string'
+          && typeof model.speedScore === 'number'
+          && typeof model.intelligenceScore === 'number'
+          && typeof model.costScore === 'number'
+        );
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  return true;
 }
 
 export const openRouterStrategy: SamplingStrategyFactory = (config: Record<string, unknown>) => {
   if (!isOpenRouterConfig(config)) {
-    throw new Error('Invalid OpenRouter sampling configuration. Expected openRouterApiKey string.');
+    throw new Error('Invalid OpenRouter configuration. Required: apiKey (string), defaultModel (string)');
   }
 
   const modelSelector = new OpenRouterModelSelector(
-    env.OPENROUTER_API_KEY,
-    config.allowedModels || defaultModelsConfig.allowedModels
+    config.apiKey,
+    (typeof config.allowedModels === 'string' ? JSON.parse(config.allowedModels) : undefined) || defaultModelsConfig.allowedModels,
+    config.defaultModel
   );
 
   const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -101,7 +125,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${config.apiKey}`,
           'HTTP-Referer': 'http://localhost:3000',
           'X-Title': 'MCP Sampling Service'
         },

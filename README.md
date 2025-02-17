@@ -10,14 +10,6 @@ A flexible sampling service and strategy registry for the Model Context Protocol
 npm install mcp-sampling-service
 ```
 
-### Environment Setup
-
-Create a `.env` file with the following variables:
-```bash
-OPENROUTER_API_KEY=your_api_key_here
-DEFAULT_MODEL_NAME=your_default_model # e.g. "openai/gpt-3.5-turbo"
-```
-
 ## Features
 
 - Plugin-based sampling strategy system
@@ -27,6 +19,45 @@ DEFAULT_MODEL_NAME=your_default_model # e.g. "openai/gpt-3.5-turbo"
 - Default models support
 - Type-safe implementation
 - Extensible architecture
+
+## Configuration
+
+The sampling service uses a configuration-based approach for initialization. This provides better flexibility, runtime updates, and easier testing compared to environment variables.
+
+### OpenRouter Configuration
+
+```typescript
+const service = new SamplingService({
+  openRouter: {
+    apiKey: "your-api-key-here",
+    defaultModel: "openai/gpt-3.5-turbo",
+    allowedModels: [
+      {
+        id: "openai/gpt-4",
+        speedScore: 0.7,
+        intelligenceScore: 0.9,
+        costScore: 0.3
+      },
+      {
+        id: "openai/gpt-3.5-turbo",
+        speedScore: 0.9,
+        intelligenceScore: 0.7,
+        costScore: 0.8
+      }
+    ]
+  }
+});
+```
+
+### Custom Strategy Configuration
+
+```typescript
+const service = new SamplingService({
+  strategy: customStrategy({
+    // Your custom strategy configuration
+  })
+});
+```
 
 ## Usage
 
@@ -46,8 +77,10 @@ const registry = SamplingStrategyRegistry.getInstance();
 registry.register('stub', stubStrategy);
 registry.register('openrouter', openRouterStrategy);
 
-// Create strategy instance with optional model configurations
+// Create strategy instance with configuration
 const strategy = registry.create('openrouter', {
+  apiKey: "your-api-key-here",
+  defaultModel: "openai/gpt-3.5-turbo",
   allowedModels: [
     {
       id: "openai/gpt-4",
@@ -122,7 +155,12 @@ registry.register('custom', customStrategy);
 ```typescript
 import { SamplingService } from 'mcp-sampling-service';
 
-const service = new SamplingService();
+const service = new SamplingService({
+  openRouter: {
+    apiKey: "your-api-key-here",
+    defaultModel: "openai/gpt-3.5-turbo"
+  }
+});
 
 const result = await service.handleSamplingRequest({
   messages: [
@@ -161,7 +199,9 @@ Strategy that connects to OpenRouter's API with intelligent model selection.
 
 Configuration:
 ```typescript
-interface OpenRouterSamplingConfig {
+interface OpenRouterStrategyConfig {
+  apiKey: string;
+  defaultModel: string;
   allowedModels?: ModelConfig[];
 }
 
@@ -193,7 +233,7 @@ interface ModelHint {
 
 Core service that handles sampling requests with:
 - Model selection based on preferences
-- Automatic fallback to default model
+- Configuration-based initialization
 - Request validation
 - Error handling
 - Context length validation
