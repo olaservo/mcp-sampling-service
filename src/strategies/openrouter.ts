@@ -1,13 +1,20 @@
 import { CreateMessageRequest, CreateMessageResult } from "@modelcontextprotocol/sdk/types";
 import { SamplingStrategyFactory } from '../types/sampling.js';
+import { SamplingStrategyDefinition } from '../types/strategy.js';
 import { OpenRouterModelSelector, ModelConfig } from './openrouter-model-selector.js';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const defaultModelsConfig = JSON.parse(
-  readFileSync(join(__dirname, '../config/default-models.json'), 'utf-8')
-);
+export const OPENROUTER_CONFIG_DEFINITION: SamplingStrategyDefinition = {
+  id: 'openrouter',
+  name: 'OpenRouter',
+  requiresConfig: true,
+  configFields: [
+    {
+      name: 'defaultModel',
+      type: 'string',
+      label: 'Default Model',
+      required: true
+    }
+  ]
+};
 
 export interface OpenRouterStrategyConfig {
   apiKey: string;
@@ -37,25 +44,17 @@ function isOpenRouterConfig(config: unknown): config is OpenRouterStrategyConfig
   }
 
   if (allowedModels !== undefined) {
-    if (typeof allowedModels === 'string') {
-      try {
-        const parsed = JSON.parse(allowedModels);
-        if (!Array.isArray(parsed)) {
-          return false;
-        }
-        return parsed.every(model => 
-          typeof model === 'object' 
-          && model !== null
-          && typeof model.id === 'string'
-          && typeof model.speedScore === 'number'
-          && typeof model.intelligenceScore === 'number'
-          && typeof model.costScore === 'number'
-        );
-      } catch {
-        return false;
-      }
+    if (!Array.isArray(allowedModels)) {
+      return false;
     }
-    return false;
+    return allowedModels.every(model => 
+      typeof model === 'object' 
+      && model !== null
+      && typeof model.id === 'string'
+      && typeof model.speedScore === 'number'
+      && typeof model.intelligenceScore === 'number'
+      && typeof model.costScore === 'number'
+    );
   }
 
   return true;
@@ -68,7 +67,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
 
   const modelSelector = new OpenRouterModelSelector(
     config.apiKey,
-    (typeof config.allowedModels === 'string' ? JSON.parse(config.allowedModels) : undefined) || defaultModelsConfig.allowedModels,
+    config.allowedModels || [],
     config.defaultModel
   );
 
