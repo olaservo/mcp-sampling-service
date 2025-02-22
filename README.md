@@ -2,7 +2,7 @@
 
 🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change.** 🚧
 
-A flexible sampling service and strategy registry for the Model Context Protocol (MCP) ecosystem.
+A proof of concept for a flexible sampling strategy registry to use with the Model Context Protocol (MCP).
 
 ## Installation
 
@@ -30,22 +30,13 @@ The sampling service uses a configuration-based approach for initialization. Thi
 - **defaultModel** (required): Model to use when no preferences match
 - **allowedModels** (optional): JSON string of custom model configurations. If not provided, uses built-in model configurations optimized for various use cases.
 
-### Default Models
-
-The service includes a comprehensive set of pre-configured models that are used when `allowedModels` is not provided:
-- Fast models (e.g., google/gemini-flash-1.5 with 0.94 speed score)
-- Intelligent models (e.g., deepseek/deepseek-r1 with 0.97 intelligence score)
-- Cost-effective models (e.g., mistralai/mistral-nemo with 1.00 cost score)
-
-You only need to provide `allowedModels` if you want to customize the available models and their scores.
-
 ### Model Selection
 
 The service selects models based on:
-1. Explicit model override in preferences
-2. Matching hints in order
-3. Priority scoring (speed, intelligence, cost)
-4. Fallback to defaultModel
+
+1. Matching hints in order
+2. Priority scoring (speed, intelligence, cost)
+3. Fallback to defaultModel
 
 ### OpenRouter Configuration
 
@@ -54,7 +45,7 @@ const service = new SamplingService({
   openRouter: {
     apiKey: "your-api-key-here",
     defaultModel: "anthropic/claude-3.5-sonnet",
-    allowedModels: JSON.stringify([
+    allowedModels: [
       {
         id: "openai/gpt-4",
         speedScore: 0.7,
@@ -67,7 +58,7 @@ const service = new SamplingService({
         intelligenceScore: 0.7,
         costScore: 0.8
       }
-    ])
+    ]
   }
 });
 ```
@@ -104,7 +95,7 @@ registry.register('openrouter', openRouterStrategy);
 const strategy = registry.create('openrouter', {
   apiKey: "your-api-key-here",
   defaultModel: "anthropic/claude-3.5-sonnet",
-  allowedModels: JSON.stringify([
+  allowedModels:[
     {
       id: "openai/gpt-4",
       speedScore: 0.7,
@@ -117,7 +108,7 @@ const strategy = registry.create('openrouter', {
       intelligenceScore: 0.7,
       costScore: 0.8
     }
-  ])
+  ]
 });
 
 // Use strategy with model preferences
@@ -252,16 +243,3 @@ interface ModelHint {
   [key: string]: unknown;
 }
 ```
-
-### SamplingService
-
-Core service that handles sampling requests with:
-- Model selection based on preferences
-- Configuration-based initialization
-- Request validation
-- Error handling
-- Context length validation
-
-## License
-
-MIT
