@@ -1,6 +1,6 @@
 {
   "name": "mcp-sampling-service",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Sampling service and strategy registry for Model Context Protocol",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,11 +17,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && npm run copy-files",
+    "build": "tsc",
     "clean": "rimraf dist",
     "prepare": "npm run clean && npm run build",
-    "test": "jest",
-    "copy-files": "powershell Write-Host 'Starting config files copy...' ; New-Item -ItemType Directory -Force -Path './dist/config' ; Copy-Item -Path './src/config/*' -Destination './dist/config/' -Force -Verbose ; Write-Host 'Copy operation completed'"
+    "test": "jest"
   },
   "keywords": [
     "mcp",
@@ -32,8 +31,7 @@
   "author": "olaservo",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.4.1",
-    "dotenv": "^16.4.7"
+    "@modelcontextprotocol/sdk": "^1.5.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

@@ -14,7 +14,7 @@ export default {
       },
     ],
   },
-  setupFiles: ['<rootDir>/test/setup.js'],
+  setupFiles: [],
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/'
