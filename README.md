@@ -1,6 +1,6 @@
 # mcp-sampling-service
 
-🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change.** 🚧
+🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change.  Not recommended to be used directly in any production apps!** 🚧
 
 A proof of concept for a flexible sampling strategy registry to use with the Model Context Protocol (MCP).
 
