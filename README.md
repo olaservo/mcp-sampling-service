@@ -1,8 +1,8 @@
 # mcp-sampling-service
 
-🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change.  Not recommended to be used directly in any production apps!** 🚧
+🚧 **UNDER CONSTRUCTION: This package is currently being developed and its API may change. Not recommended to be used directly in any production apps!** 🚧
 
-A proof of concept for a flexible sampling strategy registry to use with the Model Context Protocol (MCP).
+A proof of concept for a flexible sampling strategy registry to use with the [Model Context Protocol](https://modelcontextprotocol.io/introduction) (a.k.a. MCP).
 
 ## Installation
 
@@ -13,89 +13,44 @@ npm install mcp-sampling-service
 ## Features
 
 - Plugin-based sampling strategy system
-- OpenRouter integration with smart model selection
-- Model scoring based on speed, intelligence, and cost
-- Configurable model preferences and hints
-- Default models support
-- Type-safe implementation
+- Includes example OpenRouter integration with intelligent model selection
 - Extensible architecture
 
-## Configuration
+## Initialization
 
-The sampling service uses a configuration-based approach for initialization. This provides better flexibility, runtime updates, and easier testing compared to environment variables.
-
-### Configuration Options
-
-- **apiKey** (required): Your OpenRouter API key
-- **defaultModel** (required): Model to use when no preferences match
-- **allowedModels** (optional): JSON string of custom model configurations. If not provided, uses built-in model configurations optimized for various use cases.
-
-### Model Selection
-
-The service selects models based on:
-
-1. Matching hints in order
-2. Priority scoring (speed, intelligence, cost)
-3. Fallback to defaultModel
-
-### OpenRouter Configuration
+The library uses a registry-based approach for managing [sampling](https://modelcontextprotocol.io/docs/concepts/sampling) strategies. The recommended way to initialize the service is through the `initializeSamplingService` function:
 
 ```typescript
-const service = new SamplingService({
-  openRouter: {
-    apiKey: "your-api-key-here",
-    defaultModel: "anthropic/claude-3.5-sonnet",
-    allowedModels: [
-      {
-        id: "openai/gpt-4",
-        speedScore: 0.7,
-        intelligenceScore: 0.9,
-        costScore: 0.3
-      },
-      {
-        id: "anthropic/claude-3.5-sonnet",
-        speedScore: 0.9,
-        intelligenceScore: 0.7,
-        costScore: 0.8
-      }
-    ]
+import { initializeSamplingService } from 'mcp-sampling-service';
+
+// Initialize with default strategies (stub and openrouter)
+const registry = initializeSamplingService({
+  useDefaultStrategies: true
+});
+
+// Or initialize with custom strategies
+const registry = initializeSamplingService({
+  useDefaultStrategies: false,
+  additionalStrategies: {
+    myStrategy: {
+      factory: myStrategyFactory,
+      definition: myStrategyDefinition
+    }
   }
 });
 ```
 
-### Custom Strategy Configuration
+## Configuration
+
+### OpenRouter Strategy Configuration
+
+The OpenRouter strategy requires configuration for API access and model selection:
 
 ```typescript
-const service = new SamplingService({
-  strategy: customStrategy({
-    // Your custom strategy configuration
-  })
-});
-```
-
-## Usage
-
-### Basic Usage
-
-```typescript
-import { 
-  SamplingStrategyRegistry, 
-  stubStrategy, 
-  openRouterStrategy 
-} from 'mcp-sampling-service';
-
-// Get registry instance
-const registry = SamplingStrategyRegistry.getInstance();
-
-// Register built-in strategies
-registry.register('stub', stubStrategy);
-registry.register('openrouter', openRouterStrategy);
-
-// Create strategy instance with configuration
 const strategy = registry.create('openrouter', {
   apiKey: "your-api-key-here",
   defaultModel: "anthropic/claude-3.5-sonnet",
-  allowedModels:[
+  allowedModels: [
     {
       id: "openai/gpt-4",
       speedScore: 0.7,
@@ -110,9 +65,41 @@ const strategy = registry.create('openrouter', {
     }
   ]
 });
+```
 
-// Use strategy with model preferences
+### Model Selection Process
+
+The OpenRouter strategy selects models based on:
+
+1. Model hints (processed in order)
+3. Priority scoring:
+   - Speed priority (response time)
+   - Intelligence priority (model capabilities)
+   - Cost priority (token pricing)
+4. Fallback to default model if no suitable match
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { 
+  initializeSamplingService,
+  SamplingStrategy 
+} from 'mcp-sampling-service';
+
+// Initialize registry
+const registry = initializeSamplingService();
+
+// Create strategy instance
+const strategy = registry.create('openrouter', {
+  apiKey: "your-api-key-here",
+  defaultModel: "anthropic/claude-3.5-sonnet"
+});
+
+// Use strategy
 const result = await strategy.handleSamplingRequest({
+  method: "sampling/createMessage",
   params: {
     messages: [
       {
@@ -124,6 +111,9 @@ const result = await strategy.handleSamplingRequest({
       }
     ],
     maxTokens: 1000,
+    temperature: 0.2, // Optional, defaults to 0.2
+    systemPrompt: "You are a helpful assistant", // Optional
+    stopSequences: ["END"], // Optional
     modelPreferences: {
       speedPriority: 0.8,
       intelligencePriority: 0.6,
@@ -136,21 +126,38 @@ const result = await strategy.handleSamplingRequest({
 });
 ```
 
-### Custom Strategy
+### Custom Strategy Implementation
 
 ```typescript
 import { 
-  SamplingStrategy, 
-  SamplingStrategyFactory 
+  SamplingStrategy,
+  SamplingStrategyDefinition,
+  CreateMessageRequest,
+  CreateMessageResult
 } from 'mcp-sampling-service';
 
+// Define your strategy's configuration requirements
+const myStrategyDefinition: SamplingStrategyDefinition = {
+  id: 'custom',
+  name: 'Custom Strategy',
+  requiresConfig: true,
+  configFields: [
+    {
+      name: 'apiKey',
+      type: 'string',
+      label: 'API Key',
+      required: true
+    }
+  ]
+};
+
 // Create your strategy factory
-const customStrategy: SamplingStrategyFactory = (config) => ({
-  handleSamplingRequest: async (request) => {
+const myStrategyFactory = (config: Record<string, unknown>): SamplingStrategy => ({
+  handleSamplingRequest: async (request: CreateMessageRequest): Promise<CreateMessageResult> => {
     // Your implementation here
     return {
       model: "custom-model",
-      stopReason: "endTurn",
+      stopReason: "stop",
       role: "assistant",
       content: {
         type: "text",
@@ -161,48 +168,48 @@ const customStrategy: SamplingStrategyFactory = (config) => ({
 });
 
 // Register your strategy
-registry.register('custom', customStrategy);
-```
-
-### Using SamplingService Directly
-
-```typescript
-import { SamplingService } from 'mcp-sampling-service';
-
-const service = new SamplingService({
-  openRouter: {
-    apiKey: "your-api-key-here",
-    defaultModel: "anthropic/claude-3.5-sonnet"
-    // allowedModels is optional - will use built-in model configurations if not provided
+const registry = initializeSamplingService({
+  useDefaultStrategies: true,
+  additionalStrategies: {
+    custom: {
+      factory: myStrategyFactory,
+      definition: myStrategyDefinition
+    }
   }
 });
-
-const result = await service.handleSamplingRequest({
-  messages: [
-    {
-      role: 'user',
-      content: {
-        type: 'text',
-        text: 'Hello!'
-      }
-    }
-  ],
-  maxTokens: 1000,
-  modelPreferences: {
-    costPriority: 0.9,
-    hints: [{ name: "gpt-4" }]
-  }
-}, requestId);
 ```
 
 ## API Reference
 
 ### SamplingStrategyRegistry
 
+Static class that manages sampling strategies:
+
 - `getInstance()`: Get singleton instance
-- `register(name: string, factory: SamplingStrategyFactory)`: Register a strategy
-- `create(name: string, config: any)`: Create strategy instance
+- `register(name: string, factory: SamplingStrategyFactory, definition: SamplingStrategyDefinition)`: Register a strategy
+- `create(name: string, config: Record<string, unknown>)`: Create strategy instance
 - `getAvailableStrategies()`: Get list of registered strategies
+
+### Request Parameters
+
+```typescript
+interface SamplingParams {
+  messages: SamplingMessage[];
+  systemPrompt?: string;
+  includeContext?: 'none' | 'thisServer' | 'allServers';
+  temperature?: number;
+  maxTokens: number;
+  stopSequences?: string[];
+  modelPreferences?: ModelPreferences;
+}
+
+interface ModelPreferences {
+  hints?: Array<{ name?: string }>;
+  costPriority?: number;
+  speedPriority?: number;
+  intelligencePriority?: number;
+}
+```
 
 ### Built-in Strategies
 
@@ -217,7 +224,7 @@ Configuration:
 interface OpenRouterStrategyConfig {
   apiKey: string;
   defaultModel: string;
-  allowedModels?: string;  // JSON string of ModelConfig[] - uses built-in configurations if not provided
+  allowedModels?: ModelConfig[];
 }
 
 interface ModelConfig {
@@ -228,18 +235,25 @@ interface ModelConfig {
 }
 ```
 
-Model Preferences:
-```typescript
-interface ModelPreferences {
-  model?: string;  // Specific model override
-  hints?: ModelHint[];  // Hints for model selection
-  costPriority?: number;  // Priority for cost efficiency
-  speedPriority?: number;  // Priority for response speed
-  intelligencePriority?: number;  // Priority for model capability
-}
+### Error Handling
 
-interface ModelHint {
-  name?: string;  // Partial model name to match
-  [key: string]: unknown;
+The service provides structured error handling:
+
+```typescript
+interface SamplingResponse {
+  jsonrpc: '2.0';
+  id: number;
+  result?: {
+    model: string;
+    stopReason: string;
+    role: 'assistant';
+    content: {
+      type: 'text';
+      text: string;
+    };
+  };
+  error?: {
+    code: number;  // -32008 for SamplingError, -32009 for SamplingExecutionError
+    message: string;
+  };
 }
-```
