@@ -108,7 +108,9 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
         messages,
         max_tokens: request.params.maxTokens || 1000,
         temperature: request.params.temperature || 0.2,
-        stop: request.params.stopSequences
+        stop: request.params.stopSequences,
+        tools: request.params.tools,
+        tool_choice: request.params.toolChoice
       };
 
       console.log('OpenRouter Request URL:', OPENROUTER_API_URL);
