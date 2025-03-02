@@ -106,8 +106,8 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
             }
           ),
         messages,
-        max_tokens: request.params.maxTokens || 1000,
-        temperature: request.params.temperature || 0.2,
+        max_tokens: request.params.maxTokens || 8192,
+        temperature: request.params.temperature || 0.4,
         stop: request.params.stopSequences,
         tools: request.params.tools,
         tool_choice: request.params.toolChoice
