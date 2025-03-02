@@ -1,6 +1,6 @@
 {
   "name": "mcp-sampling-service",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Sampling service and strategy registry for Model Context Protocol",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
