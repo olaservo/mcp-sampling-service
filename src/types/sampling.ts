@@ -33,10 +33,6 @@ export interface ModelPreferences extends Record<string, unknown> {
 
 export interface SamplingStrategy {
   handleSamplingRequest(request: CreateMessageRequest): Promise<CreateMessageResult>;
-  handleStreamingSamplingRequest?(
-    request: CreateMessageRequest, 
-    onChunk: (chunk: Partial<CreateMessageResult>) => void
-  ): Promise<void>;
 }
 
 export interface SamplingStrategyFactory {

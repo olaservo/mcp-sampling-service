@@ -17,10 +17,6 @@ export default {
   setupFiles: [],
   testPathIgnorePatterns: [
     '/node_modules/',
-    '/dist/',
-    'mockFactory\\.ts$',
-    'types\\.ts$',
-    '/fixtures/',
-    '/mocks/'
+    '/dist/'
   ],
 };
