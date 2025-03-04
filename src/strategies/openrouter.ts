@@ -22,12 +22,23 @@ export interface OpenRouterStrategyConfig {
   allowedModels?: ModelConfig[];
 }
 
+export interface OpenRouterToolCall {
+  id: string;
+  type: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
 interface OpenRouterResponse {
   model: string;
   choices: Array<{
     finish_reason: string;
     message: {
+      role: string;
       content: string;
+      tool_calls?: OpenRouterToolCall[];
     };
   }>;
 }
@@ -142,7 +153,11 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
       console.log('OpenRouter Response Status:', response.status);
       console.log('OpenRouter Response:', result);
       
-      return {
+      // Log the full response structure for debugging
+      console.log('Full Response Structure:', JSON.stringify(result, null, 2));
+      console.log('Message Object:', JSON.stringify(result.choices[0].message, null, 2));
+      
+      const responseResult: CreateMessageResult = {
         model: result.model,
         stopReason: result.choices[0].finish_reason || 'stop',
         role: 'assistant',
@@ -151,6 +166,25 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
           text: result.choices[0].message.content
         }
       };
+
+      // Debug logs for tool call extraction
+      console.log('Finish reason:', result.choices[0].finish_reason);
+      console.log('Has tool_calls property:', !!result.choices[0].message.tool_calls);
+      if (result.choices[0].message.tool_calls) {
+        console.log('Tool calls length:', result.choices[0].message.tool_calls.length);
+      }
+      
+      // Extract tool calls if present
+      if (result.choices[0].finish_reason === 'tool_calls' && 
+          result.choices[0].message.tool_calls && 
+          result.choices[0].message.tool_calls.length > 0) {
+        console.log('Tool calls found in response:', JSON.stringify(result.choices[0].message.tool_calls, null, 2));
+        responseResult.toolCalls = result.choices[0].message.tool_calls;
+      } else {
+        console.log('No tool calls found in response');
+      }
+      
+      return responseResult;
     },
 
     handleStreamingSamplingRequest: async (
@@ -231,6 +265,7 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
       let buffer = '';
       let model = '';
       let fullText = '';
+      let accumulatedToolCalls: Record<string, any> = {};
 
       try {
         while (true) {
@@ -273,6 +308,54 @@ export const openRouterStrategy: SamplingStrategyFactory = (config: Record<strin
                       type: 'text',
                       text: fullText // Send the accumulated text so far
                     }
+                  });
+                }
+                
+                // Check for tool calls in the delta
+                if (json.choices?.[0]?.delta?.tool_calls) {
+                  const toolCallsChunk = json.choices[0].delta.tool_calls;
+                  console.log('Tool calls found in streaming chunk:', JSON.stringify(toolCallsChunk, null, 2));
+                  
+                  // Process each tool call in the chunk
+                  toolCallsChunk.forEach((toolCallChunk: any) => {
+                    const index = toolCallChunk.index;
+                    
+                    // Initialize the tool call if it doesn't exist
+                    if (!accumulatedToolCalls[index]) {
+                      accumulatedToolCalls[index] = {
+                        id: toolCallChunk.id,
+                        index,
+                        type: toolCallChunk.type,
+                        function: {
+                          name: toolCallChunk.function?.name,
+                          arguments: ''
+                        }
+                      };
+                    }
+                    
+                    // Update the tool call with new information
+                    if (toolCallChunk.id) {
+                      accumulatedToolCalls[index].id = toolCallChunk.id;
+                    }
+                    if (toolCallChunk.type) {
+                      accumulatedToolCalls[index].type = toolCallChunk.type;
+                    }
+                    if (toolCallChunk.function) {
+                      if (toolCallChunk.function.name) {
+                        accumulatedToolCalls[index].function.name = toolCallChunk.function.name;
+                      }
+                      if (toolCallChunk.function.arguments) {
+                        accumulatedToolCalls[index].function.arguments += toolCallChunk.function.arguments;
+                      }
+                    }
+                  });
+                  
+                  // Convert the accumulated tool calls to an array
+                  const toolCallsArray = Object.values(accumulatedToolCalls);
+                  
+                  // Send the accumulated tool calls to the callback
+                  onChunk({
+                    toolCalls: toolCallsArray
                   });
                 }
                 
