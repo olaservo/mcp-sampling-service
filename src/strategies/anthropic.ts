@@ -2,6 +2,7 @@ import { CreateMessageRequest, CreateMessageResult } from "@modelcontextprotocol
 import { SamplingStrategyFactory } from '../types/sampling.js';
 import { SamplingStrategyDefinition } from '../types/strategy.js';
 import Anthropic from '@anthropic-ai/sdk';
+import { AnthropicModelSelector } from './anthropic-model-selector.js';
 
 export const ANTHROPIC_CONFIG_DEFINITION: SamplingStrategyDefinition = {
   id: 'anthropic',
@@ -42,10 +43,22 @@ export const anthropicStrategy: SamplingStrategyFactory = (config: Record<string
     apiKey: config.apiKey
   });
 
+  const modelSelector = new AnthropicModelSelector([
+    {
+      id: config.model,
+      speedScore: 0.8,
+      intelligenceScore: 0.9,
+      costScore: 0.7,
+      contextWindow: 200000,
+      supportsExtendedThinking: config.model.includes('3-7-sonnet')
+    }
+  ], config.model);
+
   return {
     handleSamplingRequest: async (request: CreateMessageRequest): Promise<CreateMessageResult> => {
       // Convert messages to Anthropic format
-      const messages: Anthropic.MessageParam[] = [];
+      // Convert messages to Anthropic format
+      const messages: { role: 'user' | 'assistant'; content: string }[] = [];
       
       // Add user messages with proper type handling
       request.params.messages.forEach((msg: { role: string; content: { type: string; text?: string; data?: string } }) => {
@@ -54,7 +67,7 @@ export const anthropicStrategy: SamplingStrategyFactory = (config: Record<string
           // Only include user and assistant messages
           if (msg.role === 'user' || msg.role === 'assistant') {
             messages.push({
-              role: msg.role,
+              role: msg.role as 'user' | 'assistant',
               content: content
             });
           }
@@ -70,7 +83,10 @@ export const anthropicStrategy: SamplingStrategyFactory = (config: Record<string
       }
 
       const messageParams: Anthropic.Messages.MessageCreateParamsNonStreaming = {
-        model: (request.params.modelPreferences?.model || config.model) as Anthropic.Messages.Message['model'],
+        model: modelSelector.selectModel(request.params.modelPreferences || {}, {
+          prompt: messages[messages.length - 1]?.content || '',
+          maxTokens: request.params.maxTokens
+        }) as Anthropic.Messages.Message['model'],
         messages,
         max_tokens: request.params.maxTokens || 1024,
         temperature: request.params.temperature || 0.7,
