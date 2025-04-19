@@ -26,14 +26,6 @@ describe('AnthropicModelSelector', () => {
       costScore: 0.7,
       contextWindow: 200000,
       supportsExtendedThinking: false
-    },
-    {
-      id: "claude-3-opus-latest",
-      speedScore: 0.6,
-      intelligenceScore: 0.95,
-      costScore: 0.3,
-      contextWindow: 200000,
-      supportsExtendedThinking: false
     }
   ];
 

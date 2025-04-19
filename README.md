@@ -258,7 +258,6 @@ Available default models with their characteristics:
 - claude-3-7-sonnet-latest: Highest intelligence score, supports extended thinking
 - claude-3-5-haiku-latest: Fastest response time, most cost-effective
 - claude-3-5-sonnet-latest: Balanced performance and capabilities
-- claude-3-opus-latest: Very high intelligence, larger context window
 
 The model selection process considers:
 1. Context window requirements

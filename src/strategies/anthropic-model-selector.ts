@@ -53,14 +53,6 @@ const DEFAULT_MODELS: AnthropicModelConfig[] = [
     costScore: 0.7, // Mid-range cost
     contextWindow: 200000,
     supportsExtendedThinking: false
-  },
-  {
-    id: "claude-3-opus-latest",
-    speedScore: 0.6, // Moderately fast
-    intelligenceScore: 0.95, // Very high intelligence
-    costScore: 0.3, // Most expensive
-    contextWindow: 200000,
-    supportsExtendedThinking: false
   }
 ];
 
