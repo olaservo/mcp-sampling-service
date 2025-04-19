@@ -40,6 +40,10 @@ export const defaultStrategies: Record<string, {
       requiresConfig: false
     }
   },
+  anthropic: {
+    factory: anthropicStrategy,
+    definition: ANTHROPIC_CONFIG_DEFINITION
+  },
   openrouter: {
     factory: openRouterStrategy,
     definition: {
@@ -70,10 +74,6 @@ export const defaultStrategies: Record<string, {
         }
       ]
     }
-  },
-  anthropic: {
-    factory: anthropicStrategy,
-    definition: ANTHROPIC_CONFIG_DEFINITION
   }
 };
 
