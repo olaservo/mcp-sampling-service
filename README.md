@@ -13,7 +13,7 @@ npm install mcp-sampling-service
 ## Features
 
 - Plugin-based sampling strategy system
-- Includes example OpenRouter integration with intelligent model selection
+- Includes example OpenRouter and Anthropic integrations with intelligent model selection
 - Extensible architecture
 
 ## Initialization
@@ -23,7 +23,7 @@ The library uses a registry-based approach for managing [sampling](https://model
 ```typescript
 import { initializeSamplingService } from 'mcp-sampling-service';
 
-// Initialize with default strategies (stub and openrouter)
+// Initialize with default strategies (stub, openrouter, and anthropic)
 const registry = initializeSamplingService({
   useDefaultStrategies: true
 });
@@ -234,6 +234,39 @@ interface ModelConfig {
   costScore: number;     // 0-1 score for cost efficiency
 }
 ```
+
+#### Anthropic Strategy
+Strategy that connects to Anthropic's API with intelligent model selection.
+
+Configuration:
+```typescript
+interface AnthropicStrategyConfig {
+  apiKey: string;
+  model: string;  // e.g. "claude-3-5-sonnet-latest"
+}
+```
+
+Example usage:
+```typescript
+const strategy = registry.create('anthropic', {
+  apiKey: "your-api-key-here",
+  model: "claude-3-5-sonnet-latest"
+});
+```
+
+Available default models with their characteristics:
+- claude-3-7-sonnet-latest: Highest intelligence score, supports extended thinking
+- claude-3-5-haiku-latest: Fastest response time, most cost-effective
+- claude-3-5-sonnet-latest: Balanced performance and capabilities
+
+The model selection process considers:
+1. Context window requirements
+2. Extended thinking capabilities (if required)
+3. Priority scoring:
+   - Speed priority (response time)
+   - Intelligence priority (model capabilities)
+   - Cost priority (token pricing)
+4. Model hints for specific model preferences
 
 ### Error Handling
 

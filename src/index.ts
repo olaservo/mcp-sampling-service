@@ -1,13 +1,16 @@
 import { SamplingStrategyRegistry } from './registry/index.js';
 import { stubStrategy } from './strategies/stub.js';
 import { openRouterStrategy } from './strategies/openrouter.js';
+import { anthropicStrategy, ANTHROPIC_CONFIG_DEFINITION } from './strategies/anthropic.js';
 import type { SamplingStrategyFactory, SamplingStrategy } from './types/sampling.js';
 import type { SamplingStrategyDefinition } from './types/strategy.js';
 
 export { SamplingStrategyRegistry };
 export { stubStrategy };
 export { openRouterStrategy };
+export { anthropicStrategy };
 export type { OpenRouterStrategyConfig } from './strategies/openrouter.js';
+export type { AnthropicStrategyConfig } from './strategies/anthropic.js';
 export type { ModelConfig } from './strategies/openrouter-model-selector.js';
 export type {
   SamplingStrategy,
@@ -67,6 +70,10 @@ export const defaultStrategies: Record<string, {
         }
       ]
     }
+  },
+  anthropic: {
+    factory: anthropicStrategy,
+    definition: ANTHROPIC_CONFIG_DEFINITION
   }
 };
 
